@@ -27,16 +27,15 @@ def setCopy(arg):
 
 
 m = FlagManager([
-    Flag("-l", description="specify length of password", onCall=lambda x : setLen(x)),
-    Flag("-in", description="password as arg", onCall=setPass),
-    Flag("-p", description="print password 1/0  (false default)", onCall=setPrint),
-    Flag("-c", description="copy to clip board 1/0 (true default)", onCall=setCopy),
+    Flag("-l","--length", description="specify length of password", onCall=lambda x : setLen(x)),
+    Flag("-i","--in", description="password as arg", onCall=setPass),
+    Flag("-p","--shouldprint", description="print password 1/0  (false default)", onCall=setPrint),
+    Flag("-c","--shouldcopy", description="copy to clip board 1/0 (true default)", onCall=setCopy),
 ])
-
+m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
 m.check()
 
-fname = sys.argv[len(sys.argv)-1]
-if password == "":
+if password == "" and "-h" not in sys.argv:
     password = getpass.getpass("write your password: ")
 
 pas = genPassword(password)[0:length]
