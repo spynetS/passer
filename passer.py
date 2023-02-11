@@ -1,8 +1,8 @@
 #!/usr/bin/python
 from flagser import *
 import getpass
-from passlib.hash import argon2
 import pyperclip
+import hashlib
 
 length = 25
 password = ""
@@ -10,7 +10,7 @@ should_print = False
 should_copy = True
 
 def genPassword(pas):
-    return argon2.using(rounds = 2, salt = bytes("Ckdxu0QBSYoNbnSW", 'utf-8'), parallelism = 1).hash(pas).split("=")[4].split("w$")[1]
+    return hashlib.sha256(pas.encode()).hexdigest()
 
 def setLen(arg):
     global length
