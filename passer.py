@@ -1,8 +1,10 @@
 #!/usr/bin/python
 from flagser import *
+from sys import platform
 import getpass
 import pyperclip
 import hashlib
+import os
 
 length = 25
 password = ""
@@ -25,12 +27,32 @@ def setCopy(arg):
     global should_copy
     should_copy = True if len(arg) < 1 else int(arg[0]) == 1
 
+def setSalt(args):
+    path = os.path.expanduser('~/.config/passer') if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
+    print(path)
+    if os.path.isfile(path):
+        with open(path,"w") as file:
+            file.write(args[0])
+    else:
+        with open(path,"x") as file:
+            file.write(args[0])
+
+def getSalt():
+    path = os.path.expanduser('~/.config/passer') if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
+    with open(path,"r") as file:
+        return file.read()
+
+def saltPassword(password):
+    return password+getSalt()
 
 m = FlagManager([
-    Flag("-l","--length     ", description="specify length of password", onCall=lambda x : setLen(x)),
-    Flag("-i","--in         ", description="password as arg", onCall=setPass),
+    Flag("-l","--length", description="specify length of password", onCall=lambda x : setLen(x)),
+    Flag("-i","--in", description="password as arg", onCall=setPass),
     Flag("-p","--shouldprint", description="print password 1/0  (false default)", onCall=setPrint),
-    Flag("-c","--shouldcopy ", description="copy to clip board 1/0 (true default)", onCall=setCopy),
+    Flag("-c","--shouldcopy", description="copy to clip board 1/0 (true default)", onCall=setCopy),
+    Flag("-s","--setsalt", description="sets a salt (./config/passer)", onCall=setSalt),
+    Flag("-gs","--getsalt", description="gets the salt (./config/passer)", onCall=lambda x : print(getSalt())),
+    Flag("-cs","--clearsalt", description="gets the salt (./config/passer)", onCall=lambda x : setSalt([""])),
 ])
 m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
 m.check()
@@ -38,7 +60,7 @@ m.check()
 if password == "" and "-h" not in sys.argv:
     password = getpass.getpass("write your password: ")
 
-pas = genPassword(password)[0:length]
+pas = genPassword(saltPassword(password))[0:length]
 if should_print:
     print(pas)
 
