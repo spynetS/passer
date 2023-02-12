@@ -51,8 +51,8 @@ m = FlagManager([
     Flag("-p","--shouldprint", description="print password 1/0  (false default)", onCall=setPrint),
     Flag("-c","--shouldcopy", description="copy to clip board 1/0 (true default)", onCall=setCopy),
     Flag("-s","--setsalt", description="sets a salt (./config/passer)", onCall=setSalt),
-    Flag("-gs","--getsalt", description="gets the salt (./config/passer)", onCall=lambda x : print(getSalt())),
-    Flag("-cs","--clearsalt", description="gets the salt (./config/passer)", onCall=lambda x : setSalt([""])),
+    Flag("-gs","--getsalt", description="outputs the saved salt (./config/passer)", onCall=lambda x : print(getSalt())),
+    Flag("-cs","--clearsalt", description="clears the saved salt (./config/passer)", onCall=lambda x : setSalt([""])),
 ])
 m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
 m.check()
