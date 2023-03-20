@@ -57,7 +57,7 @@ m = FlagManager([
 m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
 m.check()
 
-if password == "" and "-h" not in sys.argv:
+if password == "" and ("-h" not in sys.argv and "-s" not in sys.argv and "-gs" not in sys.argv and "-cs" not in sys.argv):
     password = getpass.getpass("write your password: ")
 
 pas = genPassword(saltPassword(password))[0:length]
