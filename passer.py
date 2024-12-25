@@ -10,6 +10,7 @@ length = 25
 password = ""
 should_print = False
 should_copy = True
+config_path = "~/.config/passer"
 
 def genPassword(pas):
     return hashlib.sha256(pas.encode()).hexdigest()
@@ -28,7 +29,7 @@ def setCopy(arg):
     should_copy = True if len(arg) < 1 else int(arg[0]) == 1
 
 def setSalt(args):
-    path = os.path.expanduser('~/.config/passer') if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
+    path = os.path.expanduser(config_path) if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
     print(path)
     if os.path.isfile(path):
         with open(path,"w") as file:
@@ -38,7 +39,10 @@ def setSalt(args):
             file.write(args[0])
 
 def getSalt():
-    path = os.path.expanduser('~/.config/passer') if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
+    path = os.path.expanduser(config_path) if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
+    if not os.path.exists(path):
+        with open(path, 'w'): pass
+
     with open(path,"r") as file:
         return file.read()
 
