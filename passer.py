@@ -11,9 +11,10 @@ length = 25
 password = ""
 should_print = False
 should_copy = True
+upper = True
+special_characters = True
+digits = True
 config_path = "~/.config/passer"
-
-alphabet = string.ascii_letters + string.digits
 
 def genPassword(pas):
     digest = hashlib.sha256(pas.encode()).digest()
@@ -42,6 +43,12 @@ def setSalt(args):
     else:
         with open(path,"x") as file:
             file.write(args[0])
+def setUpper():
+    global upper
+    upper = False if len(arg) < 1 else int(arg[0]) == 1
+def setSpecial():
+    global special_characters
+    special_characters = False if len(arg) < 1 else int(arg[0]) == 1
 
 def getSalt():
     path = os.path.expanduser(config_path) if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
@@ -65,6 +72,15 @@ m = FlagManager([
 ])
 m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
 m.check()
+
+alphabet = string.ascii_lowercase 
+
+if upper:
+    alphabet += string.ascii_uppercase
+if digits:
+    alphabet += string.digits 
+if special_characters:
+    alphabet += string.punctuation
 
 if password == "" and ("-h" not in sys.argv and "-s" not in sys.argv and "-gs" not in sys.argv and "-cs" not in sys.argv):
     password = getpass.getpass("write your password: ")
