@@ -16,8 +16,12 @@ upper = True
 special_characters = True
 digits = True
 config_path = "~/.config/passer"
+legazy = False
 
-def genPassword(pas):
+def genPassword(pas,legazy=False):
+    if legazy:
+        return hashlib.sha256(pas.encode()).hexdigest()
+
     digest = hashlib.sha256(pas.encode()).digest()
     chars = [alphabet[byte % len(alphabet)] for byte in digest]
     return "".join(chars)
@@ -69,6 +73,10 @@ def getSalt():
 def saltPassword(password):
     return password+getSalt()
 
+def setLegazy(legazy_):
+    global legazy
+    legazy = legazy_
+
 m = FlagManager([
     Flag("-l","--length", description="specify length of password", onCall=lambda x : setLen(x)),
     Flag("-i","--in", description="password as arg", onCall=setPass),
@@ -81,6 +89,7 @@ m = FlagManager([
     Flag("-s","--setsalt", description="sets a salt (./config/passer)", onCall=setSalt),
     Flag("-gs","--getsalt", description="outputs the saved salt (./config/passer)", onCall=lambda x : print(getSalt())),
     Flag("-cs","--clearsalt", description="clears the saved salt (./config/passer)", onCall=lambda x : setSalt([""])),
+    Flag("-lg","--legazy", description="clears the saved salt (./config/passer)", onCall=lambda x : setLegazy(True)),
 ])
 m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
 m.check()
@@ -98,6 +107,7 @@ Options:
   -i, --in <password>     Provide password as argument instead of interactive prompt
   -p, --shouldprint [0/1] Print generated password (default: on)
   -c, --shouldcopy [0/1]  Copy generated password to clipboard (default: on)
+  -lg,--legazy [0/1]      Generates passwords with old hash (13c4155) (default: off)
 
   -nu, --noupper          Disable uppercase characters in the password
   -nd, --nodigits         Disable digits in the password
@@ -122,7 +132,7 @@ if special_characters:
 if password == "" and ("-h" not in sys.argv and "-s" not in sys.argv and "-gs" not in sys.argv and "-cs" not in sys.argv):
     password = getpass.getpass("write your password: ")
 
-pas = genPassword(saltPassword(password))[0:length]
+pas = genPassword(saltPassword(password),legazy)[0:length]
 if should_print:
     print(pas)
 
