@@ -10,8 +10,9 @@ function buildAlphabet(opts) {
   const lower = "abcdefghijklmnopqrstuvwxyz";
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const digits = "0123456789";
-  const special = "!\"#$%&'()*+,-./:;<=>?@[\\]^_{|}~";
+  const special = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
   let alphabet = "";
+
   if (opts.useLower) alphabet += lower;
   if (opts.useUpper) alphabet += upper;
   if (opts.useDigits) alphabet += digits;
@@ -43,9 +44,7 @@ async function generatePassword(pas, salt, opts) {
   }
 
   const digest = new Uint8Array(hashBuffer);
-
   const alphabet = buildAlphabet(opts);
-
   const chars = Array.from(digest).map(byte => {
     return alphabet[byte % alphabet.length];
   });
@@ -90,6 +89,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const { salt } = await browser.storage.local.get({ salt: "" });
       const pwd = await generatePassword(master, salt, opts);
       resultEl.value = pwd.slice(0, opts.length);
+      //resultEl.value = buildAlphabet(opts);
+
     } catch (e) {
       console.error(e);
       resultEl.value = "Error: " + e.message;
