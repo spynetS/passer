@@ -5,6 +5,7 @@ import getpass
 import pyperclip
 import hashlib
 import os
+import string
 
 length = 25
 password = ""
@@ -12,8 +13,12 @@ should_print = False
 should_copy = True
 config_path = "~/.config/passer"
 
+alphabet = string.ascii_letters + string.digits
+
 def genPassword(pas):
-    return hashlib.sha256(pas.encode()).hexdigest()
+    digest = hashlib.sha256(pas.encode()).digest()
+    chars = [alphabet[byte % len(alphabet)] for byte in digest]
+    return "".join(chars)
 
 def setLen(arg):
     global length
