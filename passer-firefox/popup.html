@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Passer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Passer</h1>
+
+  <label>
+    Master password
+    <input type="password" id="master" autocomplete="current-password">
+  </label>
+
+  <div class="row">
+    <label>
+      Length
+      <input type="number" id="length" min="4" max="128" value="25">
+    </label>
+  </div>
+
+  <fieldset>
+    <legend>Character set</legend>
+    <label><input type="checkbox" id="useLower" checked> Lowercase</label>
+    <label><input type="checkbox" id="useUpper" checked> Uppercase</label>
+    <label><input type="checkbox" id="useDigits" checked> Digits</label>
+    <label><input type="checkbox" id="useSpecial" checked> Special</label>
+    <label><input type="checkbox" id="useLegacy" checked> Legacy</label>
+  </fieldset>
+
+  <div class="row">
+    <button id="generate">Generate</button>
+    <button id="copy">Copy</button>
+    <a id="optionsLink" href="options.html" target="_blank">Options (Salt)</a>
+  </div>
+
+  <label>
+    Result
+    <input type="text" id="result" readonly>
+  </label>
+
+  <script src="popup.js"></script>
+</body>
+</html>

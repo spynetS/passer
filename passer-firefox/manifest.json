@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Passer",
+  "version": "1.0.0",
+  "description": "Deterministic password generator using a master password + salt.",
+  "action": {
+    "default_title": "Passer",
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "permissions": ["storage", "clipboardWrite"]
+}
