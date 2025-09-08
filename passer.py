@@ -9,7 +9,7 @@ import string
 
 length = 25
 password = ""
-should_print = False
+should_print = True
 should_copy = True
 upper = True
 special_characters = True
@@ -43,12 +43,15 @@ def setSalt(args):
     else:
         with open(path,"x") as file:
             file.write(args[0])
-def setUpper():
+def setUpper(arg):
     global upper
     upper = False if len(arg) < 1 else int(arg[0]) == 1
-def setSpecial():
+def setSpecial(arg):
     global special_characters
     special_characters = False if len(arg) < 1 else int(arg[0]) == 1
+def setDigits(arg):
+    global digits
+    digits = False if len(arg) < 1 else int(arg[0]) == 1
 
 def getSalt():
     path = os.path.expanduser(config_path) if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
@@ -65,6 +68,9 @@ m = FlagManager([
     Flag("-l","--length", description="specify length of password", onCall=lambda x : setLen(x)),
     Flag("-i","--in", description="password as arg", onCall=setPass),
     Flag("-p","--shouldprint", description="print password 1/0  (false default)", onCall=setPrint),
+    Flag("-nu","--noupper", description="Disable uppercase characters (false default)", onCall=setUpper),
+    Flag("-nd","--nodigits", description="Disable digits (false default)", onCall=setDigits),
+    Flag("-ns","--nospecial", description="Disable specialcase characters (false default)", onCall=setSpecial),
     Flag("-c","--shouldcopy", description="copy to clip board 1/0 (true default)", onCall=setCopy),
     Flag("-s","--setsalt", description="sets a salt (./config/passer)", onCall=setSalt),
     Flag("-gs","--getsalt", description="outputs the saved salt (./config/passer)", onCall=lambda x : print(getSalt())),
