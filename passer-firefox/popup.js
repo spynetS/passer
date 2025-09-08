@@ -36,7 +36,7 @@ async function generatePassword(pas, salt, opts) {
 
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
 
-  if (opts.legacy) {
+  if (opts.useLegacy) {
     // Return hex digest (like Python's hexdigest)
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -44,7 +44,7 @@ async function generatePassword(pas, salt, opts) {
 
   const digest = new Uint8Array(hashBuffer);
 
-  const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';  // Define your alphabet here
+  const alphabet = buildAlphabet(opts);
 
   const chars = Array.from(digest).map(byte => {
     return alphabet[byte % alphabet.length];
@@ -63,10 +63,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const resultEl = document.getElementById("result");
   const generateBtn = document.getElementById("generate");
   const copyBtn = document.getElementById("copy");
-  const legacyEl = document.getElementById("legacy");
+  const legacyEl = document.getElementById('useLegacy');
 
   const saved = await browser.storage.local.get({
-    length: 25, useLower: true, useUpper: true, useDigits: true, useSpecial: true, useLegacy: false
+    length: 25, useLower: true, useUpper: true, useDigits: true, useSpecial: true, //useLegacy: false
   });
   lengthEl.value = saved.length;
   useLowerEl.checked = saved.useLower;
@@ -83,8 +83,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         useLower: useLowerEl.checked,
         useUpper: useUpperEl.checked,
         useDigits: useDigitsEl.checked,
-        useSpecial: useSpecialEl.checked
-        ueseLegacy: useLegacy.checked
+        useSpecial: useSpecialEl.checked,
+        useLegacy: legacyEl.checked
       };
       await browser.storage.local.set(opts);
       const { salt } = await browser.storage.local.get({ salt: "" });
