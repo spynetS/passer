@@ -1,140 +1,139 @@
 #!/usr/bin/python
-from flagser import *
+import argparse
 from sys import platform
 import getpass
 import pyperclip
 import hashlib
 import os
 import string
+import sys
 
-length = 25
-password = ""
-should_help = False
-should_print = False
-should_copy = True
-upper = True
-special_characters = True
-digits = True
-config_path = "~/.config/passer"
-legazy = False
+# Configuration
+CONFIG_PATH = "~/.config/passer"
 
-def genPassword(pas,legazy=False):
-    if legazy:
+def get_config_path():
+    if platform in ["linux", "linux2", "darwin"]:
+        return os.path.expanduser(CONFIG_PATH)
+    return "NEEDS A PATH IN WiNdoWs aka spy os"
+
+def get_salt():
+    path = get_config_path()
+    if path.startswith("NEEDS"):
+        return ""
+        
+    if not os.path.exists(path):
+        try:
+            with open(path, 'w'): pass
+        except OSError:
+            pass
+
+    try:
+        with open(path, "r") as file:
+            return file.read()
+    except OSError:
+        return ""
+
+def set_salt(salt_text):
+    path = get_config_path()
+    print(path)
+    if path.startswith("NEEDS"):
+        return
+
+    mode = "w" if os.path.isfile(path) else "x"
+    try:
+        with open(path, mode) as file:
+            file.write(salt_text)
+    except OSError as e:
+        print(f"Error saving salt: {e}")
+
+def gen_password(pas, legacy=False, alphabet=string.ascii_lowercase):
+    if legacy:
         return hashlib.sha256(pas.encode()).hexdigest()
 
     digest = hashlib.sha256(pas.encode()).digest()
+    
+    if not alphabet:
+        return ""
+
     chars = [alphabet[byte % len(alphabet)] for byte in digest]
     return "".join(chars)
 
-def setLen(arg):
-    global length
-    length = int(arg[0])
-def setPass(arg):
-    global password
-    password = (arg[0])
-def setPrint(arg):
-    global should_print
-    should_print = True if len(arg) < 1 else int(arg[0]) == 1
-def setCopy(arg):
-    global should_copy
-    should_copy = True if len(arg) < 1 else int(arg[0]) == 1
+def main():
+    parser = argparse.ArgumentParser(
+        description="passer is a program that creates a secure, deterministic password from your input.",
+        epilog="passer [command] [options]"
+    )
 
-def setSalt(args):
-    path = os.path.expanduser(config_path) if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
-    print(path)
-    if os.path.isfile(path):
-        with open(path,"w") as file:
-            file.write(args[0])
-    else:
-        with open(path,"x") as file:
-            file.write(args[0])
-def setUpper(arg):
-    global upper
-    upper = False if len(arg) < 1 else int(arg[0]) == 1
-def setSpecial(arg):
-    global special_characters
-    special_characters = False if len(arg) < 1 else int(arg[0]) == 1
-def setDigits(arg):
-    global digits
-    digits = False if len(arg) < 1 else int(arg[0]) == 1
+    # Core arguments
+    parser.add_argument("-l", "--length", type=int, default=25, 
+                        help="Specify length of password (default: 25)")
+    parser.add_argument("-i", "--in", dest="password", 
+                        help="Provide password as argument")
 
-def setHelp(arg):
-    global should_help
-    should_help = True if len(arg) < 1 else int(arg[0]) == 1
+    # Toggles (using nargs='?' to support optional 0/1 args like the original, e.g. -p 0)
+    parser.add_argument("-p", "--shouldprint", nargs="?", const=1, type=int, default=0, 
+                        help="Print password 0/1 (default: 0)")
+    parser.add_argument("-c", "--shouldcopy", nargs="?", const=1, type=int, default=1, 
+                        help="Copy to clipboard 0/1 (default: 1)")
 
-def getSalt():
-    path = os.path.expanduser(config_path) if platform == "linux" or platform == "linux2" or platform == "darwin" else "NEEDS A PATH IN WiNdoWs aka spy os"
-    if not os.path.exists(path):
-        with open(path, 'w'): pass
+    # Complexity flags
+    parser.add_argument("-nu", "--noupper", action="store_true", 
+                        help="Disable uppercase characters")
+    parser.add_argument("-nd", "--nodigits", action="store_true", 
+                        help="Disable digits")
+    parser.add_argument("-ns", "--nospecial", action="store_true", 
+                        help="Disable special characters")
 
-    with open(path,"r") as file:
-        return file.read()
+    # Salt management
+    parser.add_argument("-s", "--setsalt", help="Set a salt string")
+    parser.add_argument("-gs", "--getsalt", action="store_true", help="Show the currently saved salt")
+    parser.add_argument("-cs", "--clearsalt", action="store_true", help="Clear the saved salt")
 
-def saltPassword(password):
-    return password+getSalt()
+    # Legacy mode
+    parser.add_argument("-lg", "--legazy", action="store_true", 
+                        help="Generates passwords with old hash (13c4155)")
 
-def setLegazy(legazy_):
-    global legazy
-    legazy = legazy_
+    args = parser.parse_args()
 
-m = FlagManager([
-    Flag("-l","--length", description="specify length of password", onCall=lambda x : setLen(x)),
-    Flag("-i","--in", description="password as arg", onCall=setPass),
-    Flag("-p","--shouldprint", description="print password 1/0  (false default)", onCall=setPrint),
-    Flag("-h","--help", description="Displays of list of possible flags (false default)", onCall=setHelp),
-    Flag("-nu","--noupper", description="Disable uppercase characters (false default)", onCall=setUpper),
-    Flag("-nd","--nodigits", description="Disable digits (false default)", onCall=setDigits),
-    Flag("-ns","--nospecial", description="Disable specialcase characters (false default)", onCall=setSpecial),
-    Flag("-c","--shouldcopy", description="copy to clip board 1/0 (true default)", onCall=setCopy),
-    Flag("-s","--setsalt", description="sets a salt (./config/passer)", onCall=setSalt),
-    Flag("-gs","--getsalt", description="outputs the saved salt (./config/passer)", onCall=lambda x : print(getSalt())),
-    Flag("-cs","--clearsalt", description="clears the saved salt (./config/passer)", onCall=lambda x : setSalt([""])),
-    Flag("-lg","--legazy", description="clears the saved salt (./config/passer)", onCall=lambda x : setLegazy(True)),
-])
-m.description="passer is a program that will create a secure password from your input\n passer [command] [options]"
-m.check()
+    # Handle Salt Actions (Priority over password generation)
+    if args.setsalt is not None:
+        set_salt(args.setsalt)
+        return
+    if args.clearsalt:
+        set_salt("")
+        return
+    if args.getsalt:
+        print(get_salt())
+        return
 
-if should_help:
-    print("""passer is a program that creates a secure, deterministic password from your input.\n
-You provide a master password (via -i or prompt), and passer combines it with a salt\n
-to generate a reproducible hash-based password.
+    # Build Alphabet
+    alphabet = string.ascii_lowercase
+    if not args.noupper:
+        alphabet += string.ascii_uppercase
+    if not args.nodigits:
+        alphabet += string.digits
+    if not args.nospecial:
+        alphabet += string.punctuation
 
-Usage:
-  passer [options]
+    # Get Password
+    password = args.password
+    if password is None:
+        try:
+            password = getpass.getpass("write your password: ")
+        except KeyboardInterrupt:
+            print()
+            sys.exit(0)
 
-Options:
-  -l, --length <n>        Specify length of the generated password (default: 25)
-  -i, --in <password>     Provide password as argument instead of interactive prompt
-  -p, --shouldprint [0/1] Print generated password (default: on)
-  -c, --shouldcopy [0/1]  Copy generated password to clipboard (default: on)
-  -lg,--legazy [0/1]      Generates passwords with old hash (13c4155) (default: off)
+    # Generate
+    full_pass = password + get_salt()
+    generated_pass = gen_password(full_pass, args.legazy, alphabet)[0:args.length]
 
-  -nu, --noupper          Disable uppercase characters in the password
-  -nd, --nodigits         Disable digits in the password
-  -ns, --nospecial        Disable special characters in the password
+    # Output
+    if args.shouldprint:
+        print(generated_pass)
 
-  -s,  --setsalt <text>   Set a salt string (saved in ~/.config/passer)
-  -gs, --getsalt          Show the currently saved salt
-  -cs, --clearsalt        Clear the saved salt
+    if args.shouldcopy:
+        pyperclip.copy(generated_pass)
 
-  -h, --help              Show this help message and exit""")
-    exit()
-
-alphabet = string.ascii_lowercase 
-
-if upper:
-    alphabet += string.ascii_uppercase
-if digits:
-    alphabet += string.digits 
-if special_characters:
-    alphabet += string.punctuation
-
-if password == "" and ("-h" not in sys.argv and "-s" not in sys.argv and "-gs" not in sys.argv and "-cs" not in sys.argv):
-    password = getpass.getpass("write your password: ")
-
-pas = genPassword(saltPassword(password),legazy)[0:length]
-if should_print:
-    print(pas)
-
-if should_copy:
-    pyperclip.copy(pas)
+if __name__ == "__main__":
+    main()
